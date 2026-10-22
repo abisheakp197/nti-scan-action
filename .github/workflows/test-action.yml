@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Self Test
-        uses: abisheakp197/nti-scan-action@main
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fail-on-vulnerability: 'false'
