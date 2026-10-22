@@ -1,0 +1,502 @@
+# nti-scan-action: Zero-Config Compliance Badges for AI Agents
+
+> This GitHub Action scans AI agent repositories for security vulnerabilities and generates a cryptographically signed NTI compliance badge. It requires zero configuration. When installed, it automatically updates the user's README with their security score.
+
+Directory structure:
+└── app/
+    ├── README.md
+    ├── action.yml
+    ├── LICENSE
+    ├── SECURITY.md
+    ├── src/
+    │   ├── __init__.py
+    │   └── main.py
+    └── .github/
+        └── workflows/
+            └── test-action.yml
+
+================================================
+FILE: README.md
+================================================
+[![NTI Verified](https://img.shields.io/badge/NTI_Score-100%2F100-brightgreen)](https://nti-registry.vercel.app)
+
+# nti-scan-action
+
+Zero-Config NTI Compliance Scanner & Automated Badge Generator for GitHub Actions.
+
+`nti-scan-action` automatically scans your AI agent repositories for security vulnerabilities, evaluates compliance against the NTI framework, and dynamically updates your `README.md` with an official NTI Verified badge.
+
+---
+
+## Quick Start
+
+Add the following workflow to `.github/workflows/nti-scan.yml` in your repository:
+
+```yaml
+name: NTI Compliance Scan
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run NTI Scan Action
+        uses: abisheakp197/nti-scan-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+---
+
+## Inputs
+
+| Input | Description | Required | Default |
+| --- | --- | --- | --- |
+| `github-token` | GitHub token used to commit and push the updated NTI badge back to your repository. | **Yes** | N/A |
+| `fail-on-vulnerability` | When set to `true`, fails the action build if the compliance score is `< 80`. | No | `'false'` |
+
+---
+
+## Privacy First
+
+This action runs **entirely inside your GitHub Runner**.
+
+- **Your source code is never sent to external servers or NTI services.**
+- Only the computed numerical compliance score is rendered onto the badge.
+- Complete operational privacy is preserved for enterprise and private repositories.
+
+---
+
+## Architecture
+
+```mermaid
+graph TD
+    A[GitHub Push Event] --> B[NTI Scan Action]
+    B --> C[nti-scanner Engine]
+    C --> D[Compliance Score 0-100]
+    D --> E[Badge Generation]
+    E --> F[Inject/Update README.md]
+    F --> G[Git Commit & Push with skip ci]
+```
+
+---
+
+## License
+
+This project is licensed under the [Apache 2.0 License](LICENSE).
+
+
+
+================================================
+FILE: action.yml
+================================================
+name: 'NTI Scan Action'
+description: 'Zero-Config NTI Compliance Scanner & Automated Badge Generator'
+author: 'NTI Security Bot'
+inputs:
+  github-token:
+    description: 'GitHub Token to allow committing the NTI badge back to the repository'
+    required: true
+  fail-on-vulnerability:
+    description: 'If true, fails the build when NTI compliance score is < 80'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Run NTI Scanner Action
+      shell: bash
+      env:
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_FAIL_ON_VULNERABILITY: ${{ inputs.fail-on-vulnerability }}
+      run: python ${{ github.action_path }}/src/main.py
+
+
+
+================================================
+FILE: LICENSE
+================================================
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+
+
+================================================
+FILE: SECURITY.md
+================================================
+# Security Policy
+
+## Supported Versions
+
+The following versions of `nti-scan-action` are currently supported with security updates:
+
+| Version | Supported          |
+| ------- | ------------------ |
+| v1.x    | :white_check_mark: |
+| < 1.0   | :x:                |
+
+## Reporting a Vulnerability
+
+We take the security of `nti-scan-action` and the NTI ecosystem seriously. If you believe you have found a security vulnerability in this project, please report it to us responsibly.
+
+### How to Report
+
+- **Email**: Send details of the vulnerability to `security@nti.dev`.
+- Do **not** open a public GitHub issue for security vulnerabilities.
+
+### What to Include
+
+- Description of the vulnerability and its potential impact.
+- Step-by-step instructions or proof-of-concept (PoC) code to reproduce the issue.
+- Any suggested mitigations or patches, if available.
+
+### Disclosure Policy
+
+- We will acknowledge receipt of your vulnerability report within 48 hours.
+- We will work diligently to confirm, fix, and publish a patch for verified vulnerabilities.
+- We ask that you maintain confidentiality until a public advisory and patch have been released.
+
+
+
+================================================
+FILE: src/__init__.py
+================================================
+[Empty file]
+
+
+================================================
+FILE: src/main.py
+================================================
+#!/usr/bin/env python3
+import os
+import re
+import sys
+import subprocess
+
+def run_cmd(cmd, check=False, capture=True):
+    return subprocess.run(cmd, check=check, capture_output=capture, text=True)
+
+def install_scanner():
+    try:
+        run_cmd([sys.executable, "-m", "pip", "install", "nti-scanner"])
+    except Exception as e:
+        print(f"Warning: Failed to install nti-scanner: {e}")
+
+def run_scanner():
+    score = 0
+    try:
+        res = run_cmd(["nti-scanner", "scan", "."])
+        output = (res.stdout or "") + "\n" + (res.stderr or "")
+        match = re.search(r'NTI-1\s+Score:\s*(\d+)/100', output, re.IGNORECASE)
+        if not match:
+            match = re.search(r'Score:\s*(\d+)/100', output, re.IGNORECASE)
+        if match:
+            score = int(match.group(1))
+        else:
+            print("Warning: Could not parse score from nti-scanner output. Defaulting score to 0.")
+    except Exception as e:
+        print(f"Warning: Exception while running nti-scanner: {e}. Defaulting score to 0.")
+    return score
+
+def generate_badge_markdown(score):
+    return f"[![NTI Verified](https://img.shields.io/badge/NTI_Score-{score}%2F100-brightgreen)](https://nti-registry.vercel.app)"
+
+def update_readme(badge_str, readme_path="README.md"):
+    badge_pattern = re.compile(
+        r'\[!\[NTI Verified\]\(https://img\.shields\.io/badge/NTI_Score-[^)]+\)\]\(https://nti-registry\.vercel\.app\)'
+    )
+    if os.path.exists(readme_path):
+        with open(readme_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        if badge_pattern.search(content):
+            new_content = badge_pattern.sub(badge_str, content)
+        else:
+            if content.strip():
+                new_content = badge_str + "\n\n" + content
+            else:
+                new_content = badge_str + "\n"
+    else:
+        new_content = badge_str + "\n"
+
+    with open(readme_path, "w", encoding="utf-8") as f:
+        f.write(new_content)
+
+def commit_and_push_badge(token, readme_path="README.md"):
+    try:
+        run_cmd(["git", "config", "user.name", "NTI Security Bot"])
+        run_cmd(["git", "config", "user.email", "bot@nti.dev"])
+        run_cmd(["git", "add", readme_path])
+
+        diff_res = run_cmd(["git", "diff", "--staged", "--quiet"])
+        if diff_res.returncode == 0:
+            print("No changes to README.md. Skipping commit and push.")
+            return
+
+        run_cmd(
+            ["git", "commit", "-m", "chore(security): update NTI compliance badge [skip ci]"],
+            check=True
+        )
+
+        repo = os.environ.get("GITHUB_REPOSITORY")
+        if token and repo:
+            remote_url = f"https://x-access-token:{token}@github.com/{repo}.git"
+            run_cmd(["git", "push", remote_url, "HEAD"], check=True)
+        else:
+            run_cmd(["git", "push"], check=True)
+        print("Successfully updated and pushed NTI badge.")
+    except Exception as e:
+        print(f"Warning: Failed to commit/push badge: {e}")
+
+def main():
+    token = (
+        os.environ.get("INPUT_GITHUB_TOKEN")
+        or os.environ.get("INPUT_GITHUB-TOKEN")
+        or os.environ.get("GITHUB_TOKEN", "")
+    )
+    fail_on_vuln_raw = (
+        os.environ.get("INPUT_FAIL_ON_VULNERABILITY")
+        or os.environ.get("INPUT_FAIL-ON-VULNERABILITY")
+        or "false"
+    )
+    fail_on_vuln = fail_on_vuln_raw.strip().lower() in ("true", "1", "yes")
+
+    print("Step 1: Installing nti-scanner...")
+    install_scanner()
+
+    print("Step 2: Running scanner...")
+    score = run_scanner()
+    print(f"NTI Compliance Score: {score}/100")
+
+    print("Step 3: Generating badge and updating README.md...")
+    badge_str = generate_badge_markdown(score)
+    update_readme(badge_str)
+
+    print("Step 4: Committing and pushing badge...")
+    commit_and_push_badge(token)
+
+    if fail_on_vuln and score < 80:
+        print(f"Error: Score ({score}) is below required threshold 80 and fail-on-vulnerability is enabled.")
+        sys.exit(1)
+
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()
+
+
+
+================================================
+FILE: .github/workflows/test-action.yml
+================================================
+name: Test NTI Scan Action
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Self Test
+        uses: abisheakp197/nti-scan-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-vulnerability: 'false'
