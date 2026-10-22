@@ -1,0 +1,26 @@
+name: 'NTI Scan Action'
+description: 'Zero-Config NTI Compliance Scanner & Automated Badge Generator'
+author: 'NTI Security Bot'
+inputs:
+  github-token:
+    description: 'GitHub Token to allow committing the NTI badge back to the repository'
+    required: true
+  fail-on-vulnerability:
+    description: 'If true, fails the build when NTI compliance score is < 80'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Run NTI Scanner Action
+      shell: bash
+      env:
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_FAIL_ON_VULNERABILITY: ${{ inputs.fail-on-vulnerability }}
+      run: python ${{ github.action_path }}/src/main.py

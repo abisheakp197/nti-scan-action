@@ -1,0 +1,23 @@
+name: Test NTI Scan Action
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Self Test
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-vulnerability: 'false'
